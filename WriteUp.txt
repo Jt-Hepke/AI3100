@@ -1,0 +1,6 @@
+Programming Language: C++
+
+I went about this assignment using BFS to search board states. Once I had the input of the board in a flat string, I went about a couple of functions. One to find the index of the 'x'. One "Legal" function to know what moves are legal depending on where 'x' is. And one function to move a piece and swap it with the 'x'. A piece being a number on the board. Depending on which direction the number was moving changed the index amount it would need to swap with x. Then moved into the heavy work of the queue. I had queue to move through all the board spaces. And set to mark the board spaces as seen so no looping would happen. For unsolvable handing a really didn't do any crazy function or math. I thought and then confirmed with testing that with marking board spaces as seen a computer would have no problem getting through roughly the 181k board states in less then 10 seconds. So my unsolvable handing is move all the way through the queue and if goal state was never found then it would have to like the function because queue is empty and print out "unsolvable". And with some testing it was never close to 10 seconds.
+
+Logs:
+I did google some C++ stuff when working on this project over a couple of days most of it was the early stuff because I was rusty with C++.
