@@ -7,6 +7,8 @@ from sklearn.metrics import confusion_matrix #testing numbers
 from sklearn.metrics import precision_score # presision score
 from sklearn.metrics import recall_score #recall score
 from sklearn.metrics import f1_score #f1 score
+import time #training time 
+import joblib #saving trained model
 
 
 data = pd.read_csv( #read file name below and turn into table
@@ -43,8 +45,10 @@ print("Training message:" , X_train.shape)
 print("Testing messages:", X_test.shape)
 
 #machine learning model
+startTime = time.time() #get start time before traing
 model = LogisticRegression()
 model.fit(X_train, y_train) #train model with training data
+endTime = time.time() # get time end of training
 print("Model test complete")
 
 #trained model predict with test messages
@@ -54,21 +58,64 @@ predictions = model.predict(X_test)
 print("Predictions: ")
 print(predictions[:10])
 
-#find the accuracy
-accuracy = accuracy_score(y_test, predictions)
-print("Accuracy: ", accuracy)
 
 cm = confusion_matrix(y_test, predictions)
 print("Matrix: \n", cm ) #TN, FP, FN, TP
-tn, fp, fn, tp = confusion_matrix(y_test, predictions).ravel() #pull from matrix, ravel flattens table
+tn, fp, fn, tp = confusion_matrix(y_test, predictions).ravel() #pull from matrix, ravel flattens table, assigning
 
 #calulating scores
+accuracy = accuracy_score(y_test, predictions)
 precision = precision_score(y_test, predictions, pos_label="spam") 
 recall = recall_score(y_test, predictions, pos_label="spam")
 f1 = f1_score(y_test, predictions, pos_label="spam")
+
+#calculating hardcoded
+accuracy1 = (tp + tn) / (tp + tn + fp + fn)
+precision1 = tp / (tp + fp)
+recall1 = tp / (tp + fn)
+f2 = (precision1 * recall1) / (precision1 + recall1) * 2
 specificity = tn / (tn + fp)
 
+#printing
+print("Accuracy: ", accuracy)
+print(accuracy1)
 print(precision)
+print(precision1)
 print(recall)
-print(specificity)
+print(recall1)
 print(f1)
+print(f2)
+print(specificity)
+
+
+#table
+results = pd.DataFrame({
+    "message": X_test_text.values, #original message
+    "answers": y_test.values, #correct answer
+    "predicted": predictions #model predicted value
+})
+
+# assign 'mistakes' to the messages that where spam but predicted as ham
+mistakes = results [
+    (results["answers"] == "spam") & (results["predicted"] == "ham")
+]
+#show the first mistake
+print(mistakes.head(1))
+
+
+#baseline
+print(accuracy1)
+baseline_accuracy = tn / (tn + fp + fn + tp)
+print(baseline_accuracy)
+#show improvement
+improvement = accuracy1 - baseline_accuracy
+print(improvement)
+
+#training time
+trainingTime = endTime - startTime
+print(trainingTime)
+
+
+#saved the trained models
+joblib.dump(model, "project.pkl")
+joblib.dump(vectorizer, "vectorizer.pkl")
