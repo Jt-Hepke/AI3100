@@ -77,15 +77,15 @@ f2 = (precision1 * recall1) / (precision1 + recall1) * 2
 specificity = tn / (tn + fp)
 
 #printing
-print("Accuracy: ", accuracy)
-print(accuracy1)
-print(precision)
-print(precision1)
-print(recall)
-print(recall1)
-print(f1)
-print(f2)
-print(specificity)
+#print("Accuracy: ", accuracy)
+print("Accuracy: ", accuracy1)
+#print(precision)
+print("Precision: ", precision1)
+#print(recall)
+print("Recall: ", recall1)
+#print(f1)
+print("F1 Score: ", f2)
+print("Specificity: ", specificity)
 
 
 #table
@@ -106,14 +106,14 @@ print(mistakes.head(1))
 #baseline
 print(accuracy1)
 baseline_accuracy = tn / (tn + fp + fn + tp)
-print(baseline_accuracy)
+print("Baseline: ", baseline_accuracy)
 #show improvement
 improvement = accuracy1 - baseline_accuracy
-print(improvement)
+print("Improvement: ", improvement)
 
 #training time
 trainingTime = endTime - startTime
-print(trainingTime)
+print("Training time", trainingTime)
 
 
 #saved the trained models
