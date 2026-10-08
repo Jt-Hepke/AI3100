@@ -18,9 +18,9 @@ data = pd.read_csv( #read file name below and turn into table
     names=["label", "message"]
 )
 #Look at data
-print(data.head())
-print(data.shape) # ( #number of rows, #of columns) (rows = # of messages)
-print(data["label"].value_counts()) 
+#print(data.head())
+#print(data.shape) # ( #number of rows, #of columns) (rows = # of messages)
+#print(data["label"].value_counts()) 
 
 
 #print(X.shape) #'X' now stores translatated numbered message (# of messages, # of words found)
@@ -41,33 +41,33 @@ vectorizer = TfidfVectorizer() #translator
 X_train = vectorizer.fit_transform(X_train_text) #Learn words from training messages, turn them into numbers
 X_test = vectorizer.transform(X_test_text) # turn test messages into numbers using knowledge from training
 
-print("Training message:" , X_train.shape)
-print("Testing messages:", X_test.shape)
+#print("Training message:" , X_train.shape)
+#print("Testing messages:", X_test.shape)
 
 #machine learning model
 startTime = time.time() #get start time before traing
 model = LogisticRegression()
 model.fit(X_train, y_train) #train model with training data
 endTime = time.time() # get time end of training
-print("Model test complete")
+#print("Model test complete")
 
 #trained model predict with test messages
 predictions = model.predict(X_test)
 
 #show predictions
-print("Predictions: ")
-print(predictions[:10])
+#print("Predictions: ")
+#print(predictions[:10])
 
 
 cm = confusion_matrix(y_test, predictions)
 print("Matrix: \n", cm ) #TN, FP, FN, TP
 tn, fp, fn, tp = confusion_matrix(y_test, predictions).ravel() #pull from matrix, ravel flattens table, assigning
 
-#calulating scores
-accuracy = accuracy_score(y_test, predictions)
-precision = precision_score(y_test, predictions, pos_label="spam") 
-recall = recall_score(y_test, predictions, pos_label="spam")
-f1 = f1_score(y_test, predictions, pos_label="spam")
+#calulating scores with imported function
+#accuracy = accuracy_score(y_test, predictions)
+#precision = precision_score(y_test, predictions, pos_label="spam") 
+#recall = recall_score(y_test, predictions, pos_label="spam")
+#f1 = f1_score(y_test, predictions, pos_label="spam")
 
 #calculating hardcoded
 accuracy1 = (tp + tn) / (tp + tn + fp + fn)
@@ -75,6 +75,9 @@ precision1 = tp / (tp + fp)
 recall1 = tp / (tp + fn)
 f2 = (precision1 * recall1) / (precision1 + recall1) * 2
 specificity = tn / (tn + fp)
+baseline_accuracy = tn / (tn + fp + fn + tp)
+improvement = accuracy1 - baseline_accuracy
+trainingTime = endTime - startTime
 
 #printing
 #print("Accuracy: ", accuracy)
@@ -86,7 +89,10 @@ print("Recall: ", recall1)
 #print(f1)
 print("F1 Score: ", f2)
 print("Specificity: ", specificity)
-
+print("Baseline: ", baseline_accuracy)
+print("Model improvement over baseline: ")
+print("Accuracy - Baseline: ", improvement)
+print("Training time: ", trainingTime)
 
 #table
 results = pd.DataFrame({
@@ -95,26 +101,12 @@ results = pd.DataFrame({
     "predicted": predictions #model predicted value
 })
 
-# assign 'mistakes' to the messages that where spam but predicted as ham
+# assign 'mistakes' to the messages that where spam but predicted as ham, no ft's to find in this model
 mistakes = results [
     (results["answers"] == "spam") & (results["predicted"] == "ham")
 ]
 #show the first mistake
 print(mistakes.head(1))
-
-
-#baseline
-print(accuracy1)
-baseline_accuracy = tn / (tn + fp + fn + tp)
-print("Baseline: ", baseline_accuracy)
-#show improvement
-improvement = accuracy1 - baseline_accuracy
-print("Improvement: ", improvement)
-
-#training time
-trainingTime = endTime - startTime
-print("Training time", trainingTime)
-
 
 #saved the trained models
 joblib.dump(model, "project.pkl")

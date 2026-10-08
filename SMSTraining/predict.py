@@ -25,16 +25,16 @@ tn, fp, fn, tp = confusion_matrix(labels, predictions).ravel() #get values from 
 accuracy1 = (tp + tn) / (tp + tn + fp + fn)
 precision1 = tp / (tp + fp)
 recall1 = tp / (tp + fn)
-f2 = (precision1 * recall1) / (precision1 + recall1) * 2
+f1 = (precision1 * recall1) / (precision1 + recall1) * 2
 specificity = tn / (tn + fp)
 
 #Outputing
 print("Accuracy: ", accuracy1)
 print("Precision: ", precision1)
 print("Recall: ", recall1)
-print("F1 Score: ", f2)
+print("F1 Score: ", f1)
 print("Specificity: ", specificity)
-print("Confustion Matrix below:")
+print("Confusion Matrix below:")
 print(confusion_matrix(labels, predictions))
 print("If you wanna see all the predictions for the test file they will be below to compare:")
 print(predictions)
