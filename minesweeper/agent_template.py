@@ -57,15 +57,63 @@ def make_grid(state):
     return grid
 
 def choose_move(state):
-    # Replace this with your solver: use make_grid() and neighbors() to reason
-    # about which hidden cells are safe ("left") or must be mines ("right").
-    cells = state["cells"]
-    hidden = [(c["r"], c["c"]) for c in cells if not c["revealed"] and not c["flagged"]]
-    if not hidden:
-        return None
-    r, c = random.choice(hidden)
-    return f"left {r} {c}"
+    rows = state["rows"]
+    cols = state["cols"]
 
+    #first click safe optimis in the middle
+    if state["status"] == "ready": 
+        return f"left {rows // 2 } {cols // 2}"
+
+    grid = make_grid(state) # turn flat list into grid
+
+    #after you click the board updates with new revaled information
+    #look at every revealed number
+    for r in range(rows): # look at rows
+        for c in range(cols): # look at every column
+            cell = grid[r][c] #store information
+            if not cell["revealed"] or cell["adjacent"] == 0: #skip hidden cells and show nothing
+                continue
+
+            number = cell["adjacent"] #store mine count touching cell
+
+            #sorting
+            flagged = []
+            unknown = []
+            for nr, nc in neighbors(r, c, rows, cols):
+                neighbor = grid[nr][nc]
+                #if neighbor is flagged add to flag list
+                if neighbor["flagged"]: 
+                    flagged.append((nr, nc))
+                #if unknown add it to list
+                elif not neighbor["revealed"]:
+                    unknown.append((nr, nc))
+            #nothing left to tell us move to next cell
+            if not unknown:
+                continue
+
+            #if number of mine left equals the number of unknown cells left
+            if number == len(flagged) + len(unknown):
+                # take the first unknown
+                hr, hc = unknown[0]
+                # Show the reasoning in the controller's debug output.
+                debug(f"{r}, {c} shows {number}, so {hr}, {hc} is a mine")
+                # Send a right-click command to flag that square.
+                return f"right {hr} {hc}"
+
+            #the cell number is equal to the flag count makes all the rest of hidden safe
+            if number == len(flagged):
+                hr, hc = unknown[0]
+                debug(f"{r}, {c} shows {number} and has {len(flagged)} flags, so {hr},{hc} is safe")
+                return f"left {hr} {hc}"
+
+    #guess
+    options = [(c["r"], c["c"]) for c in state["cells"] if not c["revealed"] and not c["flagged"]]
+    if not options:
+        return None
+    r, c = random.choice(options)
+    debug(f"No rule applies, guessing ({r}, {c})")
+    return f"left {r} {c}"
+    
 def main():
     stopped = False
     for line in sys.stdin:
