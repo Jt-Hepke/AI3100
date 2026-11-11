@@ -4,7 +4,8 @@ from datasets import load_dataset
 from sklearn.feature_extraction.text import CountVectorizer
 
 train = load_dataset("fancyzhx/yelp_polarity", split = "train")
-train = train.shuffle(seed =0).select(range(50000)) #break off subset for training, and the same shuffle for training
+train = train.map(lambda row: {"text": row["text"].replace("\\n", " ")})
+#train = train.shuffle(seed =0).select(range(50000)) #break off subset for training, and the same shuffle for training
 
 y = numpy.array(train["label"]) #numpy array for the math | list of labels, 0 = negative, 1 = positive
 
@@ -38,3 +39,54 @@ print("First 5 words: ", words[:5])
 print("P(word | positive): ", Pword_pos[:5])
 print("P(word | negative): ", Pword_neg[:5])
 print("Sums: ", Pword_pos.sum(), Pword_neg.sum()) #should add to 1
+
+log_prior_pos = numpy.log(prior_pos)
+log_prior_neg = numpy.log(prior_neg)
+log_p_word_pos = numpy.log(Pword_pos)   # log of every word's P(word | positive)
+log_p_word_neg = numpy.log(Pword_neg)   # log of every word's P(word | negative)
+
+def predict(text):
+    x = vectorizer.transform([text]).toarray().ravel() #use training make list of 5000 counts
+    score_pos = log_prior_pos
+    score_neg = log_prior_neg
+    for i in range(len(x)):
+        if x[i] > 0:
+            score_pos = score_pos + x[i] * log_p_word_pos[i]
+            score_neg = score_neg + x[i] * log_p_word_neg[i] # add how many times it appears * the probability of the word
+
+    #probility that the text is positive
+    biggest = max(score_pos, score_neg)
+    exp_pos = numpy.exp(score_pos -biggest)
+    exp_neg = numpy.exp(score_neg -biggest)
+    prob_pos = exp_pos / (exp_pos + exp_neg)
+
+    label = "positive" if prob_pos > 0.5 else "negative"
+    return label, prob_pos
+
+
+#tests
+tests = [ "The food was amazing and the staff were wonderful", "Terrible service, cold food, and a rude waiter","I love this place, great atmosphere"]
+for t in tests:
+    label, prob = predict(t) #run function
+    print(label, round(prob, 3), "|", t)
+
+
+
+
+#top 10 words using bayes rule for one word
+top_part = Pword_pos * prior_pos                  # numerator (for every word at once)
+denominator = top_part + Pword_neg * prior_neg    # denominator
+p_pos_given_word = top_part / denominator          # P(positive | word) for all 5000 words
+p_neg_given_word = 1 - p_pos_given_word            # P(negative | word)
+
+best_pos = numpy.argsort(-p_pos_given_word)[:10]
+best_neg = numpy.argsort(-p_neg_given_word)[:10]
+
+print("\nTop 10 positive words:")
+for i in best_pos:
+    print(words[i], round(p_pos_given_word[i], 3))
+
+print("\nTop 10 negative words:")
+for i in best_neg:
+    print(words[i], round(p_neg_given_word[i], 3))
+
